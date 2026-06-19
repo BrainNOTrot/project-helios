@@ -35,6 +35,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
     });
   }
 
+ 
   void addMission() {
     final controller = TextEditingController();
 
@@ -79,6 +80,13 @@ class _MissionsScreenState extends State<MissionsScreen> {
     );
   }
 
+  void deleteMission(int index) {
+    setState(() {
+      missions.removeAt(index);
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,14 +108,24 @@ class _MissionsScreenState extends State<MissionsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    mission.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          mission.title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
 
+                      IconButton(
+                        onPressed: () => deleteMission(index),
+                        icon: const Icon(Icons.delete),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 12),
 
                   LinearProgressIndicator(
