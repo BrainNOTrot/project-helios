@@ -5,6 +5,7 @@ import 'habits_screen.dart';
 import 'skills_screen.dart';
 import 'vault_screen.dart';
 import 'decisions_screen.dart';
+import 'missions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = const [
-    DashboardScreen(),
+    MissionsScreen(),
     HabitsScreen(),
     SkillsScreen(),
     VaultScreen(),
@@ -43,9 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
         destinations: const [
 
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+            icon: Icon(Icons.rocket_launch_outlined),
+            selectedIcon: Icon(Icons.rocket_launch),
+            label: 'Missions',
           ),
 
           NavigationDestination(
