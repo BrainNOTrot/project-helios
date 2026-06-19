@@ -36,4 +36,13 @@ class DatabaseHelper {
       )
     ''');
   }
+
+  Future<int> insertMission(Map<String, dynamic> row) async {
+    final db = await instance.database;
+
+    return await db.insert(
+      'missions',
+      row,
+    );
+  }
 }
