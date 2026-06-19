@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/habit.dart';
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
@@ -8,25 +9,16 @@ class HabitsScreen extends StatefulWidget {
 }
 
 class _HabitsScreenState extends State<HabitsScreen> {
-  final List<Map<String, dynamic>> habits = [
-    {
-      'title': 'Exercise',
-      'completed': false,
-    },
-    {
-      'title': 'Read 20 Pages',
-      'completed': true,
-    },
-    {
-      'title': 'Coding Practice',
-      'completed': false,
-    },
+  final List<Habit> habits = [
+    Habit(title: 'Exercise'),
+    Habit(title: 'Read 20 Pages', completed: true),
+    Habit(title: 'Coding Practice'),
   ];
 
   @override
   Widget build(BuildContext context) {
     final completedCount =
-        habits.where((habit) => habit['completed'] == true).length;
+        habits.where((habit) => habit.completed == true).length;
 
     final progress = completedCount / habits.length;
 
@@ -64,12 +56,12 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
                 itemBuilder: (context, index) {
                   return CheckboxListTile(
-                    title: Text(habits[index]['title']),
-                    value: habits[index]['completed'],
+                    title: Text(habits[index].title),
+                    value: habits[index].completed,
 
                     onChanged: (value) {
                       setState(() {
-                        habits[index]['completed'] = value;
+                        habits[index].completed = value ?? false;
                       });
                     },
                   );
