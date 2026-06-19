@@ -45,4 +45,31 @@ class DatabaseHelper {
       row,
     );
   }
+
+  Future<List<Map<String, dynamic>>> getAllMissions() async {
+    final db = await instance.database;
+
+    return await db.query('missions');
+  }
+
+  Future<int> updateMission(Map<String, dynamic> row) async {
+    final db = await instance.database;
+
+    return await db.update(
+      'missions',
+      row,
+      where: 'id = ?',
+      whereArgs: [row['id']],
+    );
+  }
+
+  Future<int> deleteMission(int id) async {
+    final db = await instance.database;
+
+    return await db.delete(
+      'missions',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

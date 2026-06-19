@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/mission.dart';
+import '../database/database_helper.dart';
 
 class MissionsScreen extends StatefulWidget {
   const MissionsScreen({super.key});
@@ -9,34 +10,46 @@ class MissionsScreen extends StatefulWidget {
 }
 
 class _MissionsScreenState extends State<MissionsScreen> {
-  final List<Mission> missions = [
-    Mission(title: 'Build Helios MVP', progress: 0.4),
-    Mission(title: 'Learn Flutter', progress: 0.6),
-    Mission(title: 'Improve Fitness', progress: 0.2),
-  ];
+  final List<Mission> missions = [];
 
-  void increaseProgress(int index) {
-    setState(() {
-      missions[index].progress += 0.1;
+  Future<void> increaseProgress(int index) async {
+    final mission = missions[index];
 
-      if (missions[index].progress > 1.0) {
-        missions[index].progress = 1.0;
+    if (mission.progress < 1.0) {
+      mission.progress += 0.1;
+
+      if (mission.progress > 1.0) {
+        mission.progress = 1.0;
       }
-    });
+
+      await DatabaseHelper.instance.updateMission(
+        mission.toMap(),
+      );
+
+      setState(() {});
+    }
   }
 
-  void decreaseProgress(int index) {
-    setState(() {
-      missions[index].progress -= 0.1;
+  Future<void> decreaseProgress(int index) async {
+    final mission = missions[index];
 
-      if (missions[index].progress < 0.0) {
-        missions[index].progress = 0.0;
+    if (mission.progress > 0.0) {
+      mission.progress -= 0.1;
+
+      if (mission.progress < 0.0) {
+        mission.progress = 0.0;
       }
-    });
+
+      await DatabaseHelper.instance.updateMission(
+        mission.toMap(),
+      );
+
+      setState(() {});
+    }
   }
 
  
-  void addMission() {
+  Future<void> addMission() async {
     final controller = TextEditingController();
 
     showDialog(
@@ -59,14 +72,22 @@ class _MissionsScreenState extends State<MissionsScreen> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final title = controller.text.trim();
 
                 if (title.isNotEmpty) {
+                  final mission = Mission(
+                    title: title,
+                  );
+
+                  final id = await DatabaseHelper.instance.insertMission(
+                    mission.toMap(),
+                  );
+
+                  mission.id = id;
+
                   setState(() {
-                    missions.add(
-                      Mission(title: title),
-                    );
+                    missions.add(mission);
                   });
                 }
 
@@ -80,7 +101,15 @@ class _MissionsScreenState extends State<MissionsScreen> {
     );
   }
 
-  void deleteMission(int index) {
+  Future<void> deleteMission(int index) async {
+    final mission = missions[index];
+
+    if (mission.id != null) {
+      await DatabaseHelper.instance.deleteMission(
+        mission.id!,
+      );
+    }
+
     setState(() {
       missions.removeAt(index);
     });
@@ -160,5 +189,25 @@ class _MissionsScreenState extends State<MissionsScreen> {
         },
       ),
     );
+  }
+
+  Future<void> loadMissions() async {
+    final rows = await DatabaseHelper.instance.getAllMissions();
+
+    setState(() {
+      missions.clear();
+
+      for (final row in rows) {
+        missions.add(
+          Mission.fromMap(row),
+        );
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadMissions();
   }
 }
