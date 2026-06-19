@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   runApp(const HeliosApp());
@@ -17,7 +17,7 @@ class HeliosApp extends StatelessWidget {
         useMaterial3: true,
         colorSchemeSeed: Colors.orange,
       ),
-      home: const DashboardScreen(),
+      home: const HomeScreen(),
     );
   }
 }
