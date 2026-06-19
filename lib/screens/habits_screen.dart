@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/habit.dart';
+import '../database/database_helper.dart';
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
@@ -9,18 +10,15 @@ class HabitsScreen extends StatefulWidget {
 }
 
 class _HabitsScreenState extends State<HabitsScreen> {
-  final List<Habit> habits = [
-    Habit(title: 'Exercise'),
-    Habit(title: 'Read 20 Pages', completed: true),
-    Habit(title: 'Coding Practice'),
-  ];
+  List<Habit> habits = [];
 
   @override
   Widget build(BuildContext context) {
     final completedCount =
         habits.where((habit) => habit.completed == true).length;
 
-    final progress = completedCount / habits.length;
+    final progress =
+      habits.isEmpty ? 0.0 : completedCount / habits.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -59,10 +57,25 @@ class _HabitsScreenState extends State<HabitsScreen> {
                     title: Text(habits[index].title),
                     value: habits[index].completed,
 
-                    onChanged: (value) {
+                    secondary: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () async {
+                        await DatabaseHelper.instance.deleteHabit(
+                          habits[index].id!,
+                        );
+
+                        await loadHabits();
+                      },
+                    ),
+
+                    onChanged: (value) async {
                       setState(() {
                         habits[index].completed = value ?? false;
                       });
+
+                      await DatabaseHelper.instance.updateHabit(
+                        habits[index].toMap(),
+                      );
                     },
                   );
                 },
@@ -71,6 +84,65 @@ class _HabitsScreenState extends State<HabitsScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final controller = TextEditingController();
+
+          final title = await showDialog<String>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('New Habit'),
+                content: TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    hintText: 'Habit name',
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(
+                        context,
+                        controller.text.trim(),
+                      );
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (title != null && title.isNotEmpty) {
+            await DatabaseHelper.instance.insertHabit({
+              'title': title,
+              'completed': 0,
+            });
+
+            await loadHabits();
+          }
+        },
+        child: const Icon(Icons.add),
+      ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadHabits();
+  }
+
+  Future<void> loadHabits() async {
+    final data = await DatabaseHelper.instance.getAllHabits();
+
+    setState(() {
+      habits = data.map((e) => Habit.fromMap(e)).toList();
+    });
   }
 }

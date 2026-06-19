@@ -22,7 +22,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
     );
   }
@@ -35,6 +35,14 @@ class DatabaseHelper {
         progress REAL NOT NULL
       )
     ''');
+
+    await db.execute('''
+    CREATE TABLE habits(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      completed INTEGER NOT NULL
+    )
+  ''');
   }
 
   Future<int> insertMission(Map<String, dynamic> row) async {
@@ -68,6 +76,42 @@ class DatabaseHelper {
 
     return await db.delete(
       'missions',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> insertHabit(Map<String, dynamic> row) async {
+    final db = await instance.database;
+
+    return await db.insert(
+      'habits',
+      row,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAllHabits() async {
+    final db = await instance.database;
+
+    return await db.query('habits');
+  }
+
+  Future<int> updateHabit(Map<String, dynamic> row) async {
+    final db = await instance.database;
+
+    return await db.update(
+      'habits',
+      row,
+      where: 'id = ?',
+      whereArgs: [row['id']],
+    );
+  }
+
+  Future<int> deleteHabit(int id) async {
+    final db = await instance.database;
+
+    return await db.delete(
+      'habits',
       where: 'id = ?',
       whereArgs: [id],
     );
