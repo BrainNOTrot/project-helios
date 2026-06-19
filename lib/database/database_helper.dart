@@ -22,8 +22,28 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('''
+            CREATE TABLE habits(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              title TEXT NOT NULL,
+              completed INTEGER NOT NULL
+            )
+          ''');
+        }
+        if (oldVersion < 3) {
+          await db.execute('''
+            CREATE TABLE skills(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL,
+              xp INTEGER NOT NULL
+            )
+          ''');
+        }
+      },
     );
   }
 
@@ -37,12 +57,21 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-    CREATE TABLE habits(
+      CREATE TABLE habits(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        completed INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE skills(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      completed INTEGER NOT NULL
+      name TEXT NOT NULL,
+      xp INTEGER NOT NULL
     )
   ''');
+    
   }
 
   Future<int> insertMission(Map<String, dynamic> row) async {
@@ -112,6 +141,43 @@ class DatabaseHelper {
 
     return await db.delete(
       'habits',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> insertSkill(Map<String, dynamic> skill) async {
+    final db = await database;
+
+    return await db.insert(
+      'skills',
+      skill,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAllSkills() async {
+    final db = await database;
+
+    return await db.query('skills');
+  }
+
+  Future<int> updateSkill(Map<String, dynamic> skill) async {
+    final db = await database;
+
+    return await db.update(
+      'skills',
+      skill,
+      where: 'id = ?',
+      whereArgs: [skill['id']],
+    );
+  }
+
+  Future<int> deleteSkill(int id) async {
+    final db = await database;
+
+    return await db.delete(
+      'skills',
       where: 'id = ?',
       whereArgs: [id],
     );
